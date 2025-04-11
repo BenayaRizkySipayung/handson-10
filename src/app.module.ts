@@ -5,6 +5,9 @@ import { JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { AuthGuard } from './auth/auth.guard';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -22,13 +25,20 @@ import { AppService } from './app.service';
         username: configService.get<string>('POSTGRES_USER'),
         database: configService.get<string>('POSTGRES_DATABASE'),
         migrations: ['dist/migrations/*.js'],
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        entities: [__dirname + '//*.entity{.ts,.js}'],
         autoLoadEntities: true,
         ssl: true,
       }),
     }),
+    AuthModule,
+    PostsModule,
   ],
   controllers: [AppController],
-  providers: [ConfigService, JwtService, AppService],
+  providers: [
+    ConfigService,
+    JwtService,
+    { provide: APP_GUARD, useClass: AuthGuard },
+    AppService,
+  ],
 })
-export class AppModule {}
+export class AppModule {}
